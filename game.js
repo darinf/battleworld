@@ -114,6 +114,53 @@ function BuildWarriorClass() {
   warrior_class.skills.push(sword_tornado);
 }
 
+function BuildPaladinClass() {
+  paladin_class = new CharacterClass("paladin", 200);
+
+  var judgement = new Skill("Judgement");
+  judgement.damage_lower = 30;
+  judgement.damage_upper = 30;
+  paladin_class.skills.push(judgement);
+
+  var consecration = new Skill("Consecration");
+  consecration.damage_lower = 10;
+  consecration.damage_upper = 10;
+  consecration.duration = 5;
+  consecration.aoe = true;
+  consecration.is_debuf = true;  // Hack
+  paladin_class.skills.push(consecration);
+
+  var flash_of_light = new Skill("Flash of Light");
+  flash_of_light.healing = 50;
+  flash_of_light.cast_time = 1;
+  flash_of_light.duration = 2;  // Hack
+  flash_of_light.is_multi_turn_action = true;
+  paladin_class.skills.push(flash_of_light);
+}
+
+function BuildWizardClass() {
+  wizard_class = new CharacterClass("wizard", 100);
+
+  var arcane_shield = new Skill("Arcane Shield");
+  arcane_shield.healing = 100;
+  arcane_shield.cool_down = 3;
+  wizard_class.skills.push(arcane_shield);
+
+  var fire_blast = new Skill("Fire Blast");
+  fire_blast.damage_lower = 50;
+  fire_blast.damage_upper = 50;
+  wizard_class.skills.push(fire_blast);
+
+  var blizzard = new Skill("Blizzard");
+  blizzard.damage_lower = 20;
+  blizzard.damage_upper = 20;
+  blizzard.duration = 5;
+  blizzard.aoe = true;
+  blizzard.is_multi_turn_action = true;
+  wizard_class.skills.push(blizzard);
+
+}
+
 function NewBasicClass(name, hp, damage_lower, damage_upper) {
   var new_class = new CharacterClass(name, hp);
 
@@ -125,8 +172,22 @@ function NewBasicClass(name, hp, damage_lower, damage_upper) {
   return new_class;
 }
 
+function GetCharacterClass(name) {
+  switch (name.toLowerCase()) {
+    case paladin_class.name:
+      return paladin_class;
+    case warrior_class.name:
+      return warrior_class;
+    case wizard_class.name:
+      return wizard_class;
+  }
+  return null;
+}
+
 function Initialize() {
   BuildWarriorClass();
+  BuildPaladinClass();
+  BuildWizardClass();
   RebuildUI();
 }
 
@@ -135,12 +196,22 @@ var mobs = [];
 var active_character_index = -1;
 
 function AddPlayer() {
-  // For now, just add only warriors.
-  var name = window.prompt("Enter the name of the new player");
-  var new_player = new Character(name, warrior_class);
-  players.push(new_player);
+  var dialog = document.getElementById("add_player_dialog");
+  var class_select = dialog.getElementsByTagName("select")[0];
+  var name_input = dialog.getElementsByTagName("input")[0];
 
-  RebuildUI();
+  dialog.onclose = function() {
+    console.log("selected: " + class_select.value + ", " + name_input.value);
+
+    var player_name = name_input.value;
+    var class_name = class_select.value;
+
+    players.push(new Character(player_name, GetCharacterClass(class_name)));
+
+    RebuildUI();
+  };
+
+  dialog.showModal();
 }
 
 function AddMob() {
@@ -205,6 +276,13 @@ function RebuildUI() {
           document.createTextNode(
               "action: " + player.current_action.skill.name +
               " (" + player.current_action.duration + ")"));
+      var input = document.createElement("INPUT");
+      input.setAttribute("type", "button");
+      input.setAttribute("onclick", "SkipTurn()");
+      input.setAttribute("value", "Continue");
+      if (character_index != active_character_index)
+        input.setAttribute("disabled", "true");
+      div.appendChild(input);
     }
 
     players_div.appendChild(div);
@@ -246,12 +324,12 @@ function RebuildUI() {
   var add_player_button = document.getElementById("add_player_button");
   var add_mob_button = document.getElementById("add_mob_button");
   var battle_button = document.getElementById("battle_button");
-  var skipturn_button = document.getElementById("skipturn_button");
+  //var skipturn_button = document.getElementById("skipturn_button");
 
   if (active_character_index == -1) {
     add_player_button.removeAttribute("disabled");
     add_mob_button.removeAttribute("disabled");
-    skipturn_button.setAttribute("disabled", "true");
+    //skipturn_button.setAttribute("disabled", "true");
     if (players.length == 0 || mobs.length == 0) {
       battle_button.setAttribute("disabled", "true");
     } else {
@@ -261,7 +339,7 @@ function RebuildUI() {
     add_player_button.setAttribute("disabled", "true");
     add_mob_button.setAttribute("disabled", "true");
     battle_button.setAttribute("disabled", "true");
-    skipturn_button.removeAttribute("disabled");
+    //skipturn_button.removeAttribute("disabled");
   }
 }
 

@@ -5,9 +5,28 @@
 <button id="add_player_button" onclick="AddPlayer()">Add player</button>
 <button id="add_mob_button" onclick="AddMob()">Add mob</button>
 <button id="battle_button" onclick="Battle()">Battle</button>
-<button id="skipturn_button" onclick="SkipTurn()">Skip turn</button>
+<!--<button id="skipturn_button" onclick="SkipTurn()">Skip turn</button>-->
 
 <div class="character_set" id="players"></div>
 <div class="character_set" id="mobs"></div>
+
+<dialog id="add_player_dialog">
+  <form method="dialog">
+    <p><label>Player class:
+      <select>
+        <option>Paladin</option>
+        <option selected>Warrior</option>
+        <option>Wizard</option>
+      </select>
+    </label></p>
+    <p><label>Player name:
+      <input autofocus type="text" value=""></input>
+    </label></p>
+    <menu>
+      <button value="cancel">Cancel</button>
+      <button id="confirm_button" value="default">OK</button>
+    </menu>
+  </form>
+</dialog>
 
 </body>
