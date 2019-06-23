@@ -174,10 +174,16 @@ function RebuildUI() {
     for (var skill of player.character_class.skills) {
       var input = document.createElement("INPUT");
       input.setAttribute("type", "button");
-      input.setAttribute("value", skill.name);
       input.setAttribute("onclick", "DoSkill()");
 
-      if (character_index != active_character_index || player.hp == 0 || SkillIsOnCoolDown(player, skill))
+      var cool_down = GetCoolDown(player, skill);
+      if (cool_down) {
+        input.setAttribute("value", skill.name + " (" + cool_down.duration + ")");
+      } else {
+        input.setAttribute("value", skill.name);
+      }
+
+      if (character_index != active_character_index || player.hp == 0 || cool_down)
         input.setAttribute("disabled", "true");
 
       div.appendChild(input);
@@ -431,12 +437,12 @@ function MaybeApplyCoolDownsToCharacter(character, skill) {
     character.cool_downs.push(new CoolDown(skill, skill.cool_down));
 }
 
-function SkillIsOnCoolDown(character, skill) {
+function GetCoolDown(character, skill) {
   for (var cool_down of character.cool_downs) {
     if (cool_down.skill.name == skill.name)
-      return true;
+      return cool_down;
   }
-  return false;
+  return null;
 }
 
 function DoSetTargetCharacterIndex() {
