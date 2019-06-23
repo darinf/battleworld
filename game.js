@@ -144,6 +144,7 @@ function BuildWizardClass() {
   var arcane_shield = new Skill("Arcane Shield");
   arcane_shield.healing = 100;
   arcane_shield.cool_down = 3;
+  arcane_shield.extends_hp = true;
   wizard_class.skills.push(arcane_shield);
 
   var fire_blast = new Skill("Fire Blast");
@@ -310,12 +311,18 @@ function RebuildUI() {
     input.setAttribute("type", "button");
     input.setAttribute("value", "Take turn");
     input.setAttribute("onclick", "DoMobTurn()");
-
     if (character_index != active_character_index || mob.hp == 0)
       input.setAttribute("disabled", "true");
-
     div.appendChild(input);
         
+    if (mob.debufs.length > 0) {
+      div.appendChild(document.createTextNode("debufs: "));
+      for (var debuf of mob.debufs) {
+        div.appendChild(
+            document.createTextNode(debuf.skill.name + " (" + debuf.duration + ") "));
+      }
+    }
+
     mobs_div.appendChild(div);
 
     character_index++;
@@ -483,8 +490,11 @@ function DoSkill() {
 
   if (selected_skill.aoe) {
     for (var mob of mobs) {
-      ApplySkillToCharacter(mob, selected_skill);
-      MaybeApplySkillAsDebufToCharacter(mob, selected_skill);
+      if (selected_skill.is_debuf) {
+        ApplyDebufToCharacter(mob, selected_skill);
+      } else {
+        ApplySkillToCharacter(mob, selected_skill);
+      }
     }
     MaybeApplySkillToCharacter(player, selected_skill);
     do_next_turn = true;
@@ -502,8 +512,11 @@ function DoSkill() {
         target_character_index == active_character_index) {
       console.log("Cannot apply skill to self.");
     } else {
-      ApplySkillToCharacter(target_character, selected_skill);
-      MaybeApplySkillAsDebufToCharacter(target_character, selected_skill);
+      if (selected_skill.is_debuf) {
+        ApplyDebufToCharacter(target_character, selected_skill);
+      } else {
+        ApplySkillToCharacter(target_character, selected_skill);
+      }
       MaybeApplySkillToCharacter(player, selected_skill);
       do_next_turn = true;
     }
@@ -549,17 +562,18 @@ function ApplySkillToCharacter(character, skill) {
   }
 }
 
-function MaybeApplySkillAsDebufToCharacter(character, skill) {
-  if (skill.is_debuf && skill.duration > 1) {
-    // Overwrite existing version of the same skill.
-    for (var debuf of character.debufs) {
-      if (debuf.skill.name == skill.name) {
-        debuf.duration = skill.duration - 1;
-        return;
-      }
+function ApplyDebufToCharacter(character, skill) {
+  if (!skill.is_debuf)
+    throw "Oops: skill is not a debuf!";
+
+  // Overwrite existing version of the same skill.
+  for (var debuf of character.debufs) {
+    if (debuf.skill.name == skill.name) {
+      debuf.duration = skill.duration;
+      return;
     }
-    character.debufs.push(new Debuf(skill, skill.duration - 1));
   }
+  character.debufs.push(new Debuf(skill, skill.duration));
 }
 
 function MaybeApplySkillToCharacter(character, skill) {
@@ -610,17 +624,13 @@ function DoMobTurn() {
 
   // Process any debufs
 
+  var remaining_debufs = [];
   for (var debuf of mob.debufs) {
     ApplySkillToCharacter(mob, debuf.skill);
-    debuf.duration--;
+    if (--debuf.duration > 0)
+      remaining_debufs.push(debuf);
   }
-
-  for (var debuf of mob.debufs) {
-    if (debuf.duration > 0) {
-      ApplySkillToCharacter(mob, debuf.skill);
-      debuf.duration--;
-    }
-  }
+  mob.debufs = remaining_debufs;
 
   if (mob.hp == 0) {
     // Mob died from application of debufs.
