@@ -365,6 +365,7 @@ function DoSkill() {
     var target_character_index = player.target_character_index;
     if (target_character_index < 0 || selected_skill.self_only) {
       target_character = player;
+      target_character_index = active_character_index;
     } else {
       target_character = GetCharacter(target_character_index);
     }
