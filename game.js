@@ -36,6 +36,8 @@ class Skill {
     this.aoe = false;
     this.self_only = false;
     this.extends_hp = false;
+    this.is_debuf = false;
+    this.is_multi_turn_action = false;
   }
 
   IsDamagingSkill() {
@@ -51,6 +53,13 @@ class Debuf {
 }
 
 class CoolDown {
+  constructor(skill, duration) {
+    this.skill = skill;
+    this.duration = duration;
+  }
+}
+
+class Action {
   constructor(skill, duration) {
     this.skill = skill;
     this.duration = duration;
@@ -73,6 +82,7 @@ class Character {
     this.target_character_index = -1;
     this.debufs = [];
     this.cool_downs = [];
+    this.current_action = null;
   }
 }
 
@@ -100,6 +110,7 @@ function BuildWarriorClass() {
   sword_tornado.damage_upper = 10;
   sword_tornado.aoe = true;
   sword_tornado.duration = 3;
+  sword_tornado.is_multi_turn_action = true;
   warrior_class.skills.push(sword_tornado);
 }
 
@@ -189,6 +200,13 @@ function RebuildUI() {
       div.appendChild(input);
     }
 
+    if (player.current_action) {
+      div.appendChild(
+          document.createTextNode(
+              "action: " + player.current_action.skill.name +
+              " (" + player.current_action.duration + ")"));
+    }
+
     players_div.appendChild(div);
 
     character_index++;
@@ -228,18 +246,22 @@ function RebuildUI() {
   var add_player_button = document.getElementById("add_player_button");
   var add_mob_button = document.getElementById("add_mob_button");
   var battle_button = document.getElementById("battle_button");
+  var skipturn_button = document.getElementById("skipturn_button");
 
   if (active_character_index == -1) {
     add_player_button.removeAttribute("disabled");
     add_mob_button.removeAttribute("disabled");
-    if (players.length == 0 || mobs.length == 0)
+    skipturn_button.setAttribute("disabled", "true");
+    if (players.length == 0 || mobs.length == 0) {
       battle_button.setAttribute("disabled", "true");
-    else
+    } else {
       battle_button.removeAttribute("disabled");
+    }
   } else {
     add_player_button.setAttribute("disabled", "true");
     add_mob_button.setAttribute("disabled", "true");
     battle_button.setAttribute("disabled", "true");
+    skipturn_button.removeAttribute("disabled");
   }
 }
 
@@ -249,6 +271,15 @@ function Battle() {
   active_character_index = 0;
 
   UpdateTargetOfMobs();
+  RebuildUI();
+}
+
+function SkipTurn() {
+  console.log("Skip turn!");
+
+  UpdateCurrentAction(GetCharacter(active_character_index));
+
+  NextTurn();
   RebuildUI();
 }
 
@@ -279,6 +310,23 @@ function UpdateCoolDowns(character) {
       new_cool_downs.push(cool_down); 
   }
   character.cool_downs = new_cool_downs;
+}
+
+function UpdateCurrentAction(character) {
+  if (!character.current_action)
+    return;
+
+  var skill = character.current_action.skill;
+
+  // We only know how to update actions that are AOE damaging skills.
+  if (!(skill.aoe && skill.IsDamagingSkill()))
+    return;
+
+  for (var mob of mobs)
+    ApplySkillToCharacter(mob, skill);
+
+  if (--character.current_action.duration == 0)
+    character.current_action = null;
 }
 
 function UpdateTargetOfMobs() {
@@ -336,6 +384,9 @@ function DoSkill() {
 
   var player = players[active_character_index];
 
+  // Replaces any current action.
+  player.current_action = null;
+
   // Find the selected skill
   var selected_skill;
   for (var skill of player.character_class.skills) {
@@ -356,8 +407,8 @@ function DoSkill() {
     for (var mob of mobs) {
       ApplySkillToCharacter(mob, selected_skill);
       MaybeApplySkillAsDebufToCharacter(mob, selected_skill);
-      MaybeApplyCoolDownsToCharacter(player, selected_skill);
     }
+    MaybeApplySkillToCharacter(player, selected_skill);
     do_next_turn = true;
   } else {
     // Find the target character
@@ -375,7 +426,7 @@ function DoSkill() {
     } else {
       ApplySkillToCharacter(target_character, selected_skill);
       MaybeApplySkillAsDebufToCharacter(target_character, selected_skill);
-      MaybeApplyCoolDownsToCharacter(player, selected_skill);
+      MaybeApplySkillToCharacter(player, selected_skill);
       do_next_turn = true;
     }
   }
@@ -421,7 +472,7 @@ function ApplySkillToCharacter(character, skill) {
 }
 
 function MaybeApplySkillAsDebufToCharacter(character, skill) {
-  if (skill.duration > 1 && skill.IsDamagingSkill()) {
+  if (skill.is_debuf && skill.duration > 1) {
     // Overwrite existing version of the same skill.
     for (var debuf of character.debufs) {
       if (debuf.skill.name == skill.name) {
@@ -433,7 +484,9 @@ function MaybeApplySkillAsDebufToCharacter(character, skill) {
   }
 }
 
-function MaybeApplyCoolDownsToCharacter(character, skill) {
+function MaybeApplySkillToCharacter(character, skill) {
+  if (skill.is_multi_turn_action)
+    character.current_action = new Action(skill, skill.duration - 1);
   if (skill.cool_down > 0)
     character.cool_downs.push(new CoolDown(skill, skill.cool_down));
 }
