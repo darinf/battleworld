@@ -173,7 +173,7 @@ function NewBasicClass(name, hp, damage_lower, damage_upper) {
   return new_class;
 }
 
-function GetCharacterClass(name) {
+function GetPlayerClass(name) {
   switch (name.toLowerCase()) {
     case paladin_class.name:
       return paladin_class;
@@ -181,6 +181,21 @@ function GetCharacterClass(name) {
       return warrior_class;
     case wizard_class.name:
       return wizard_class;
+  }
+  return null;
+}
+
+var basic_mobs = [
+  {name: "Naga", hp: 100, damage: [10, 60]},
+  {name: "Imp", hp: 50, damage: [5, 30]},
+  {name: "Demon", hp: 200, damage: [15, 90]},
+  {name: "Scourge Soldier", hp: 150, damage: [10, 60]},
+];
+
+function GetMobClass(name) {
+  for (var mob of basic_mobs) {
+    if (mob.name == name)
+      return NewBasicClass(mob.name, mob.hp, mob.damage[0], mob.damage[1]);
   }
   return null;
 }
@@ -207,7 +222,7 @@ function AddPlayer() {
     var player_name = name_input.value;
     var class_name = class_select.value;
 
-    players.push(new Character(player_name, GetCharacterClass(class_name)));
+    players.push(new Character(player_name, GetPlayerClass(class_name)));
 
     RebuildUI();
   };
@@ -216,13 +231,28 @@ function AddPlayer() {
 }
 
 function AddMob() {
-  // temporary
+  var dialog = document.getElementById("add_mob_dialog");
+  var type_select = dialog.getElementsByTagName("select")[0];
 
-  var naga_class = NewBasicClass("Naga", 100, 10, 60);
-  var naga = new Character("Naga", naga_class);
-  mobs.push(naga);
+  // Build out the set of options dynamically.
+  type_select.innerHTML = "";
+  for (var mob of basic_mobs) {
+    var option = document.createElement("OPTION");
+    option.appendChild(document.createTextNode(mob.name));
+    type_select.appendChild(option);
+  }
 
-  RebuildUI();
+  dialog.onclose = function() {
+    console.log("selected: " + type_select.value);
+
+    var type_name = type_select.value;
+
+    mobs.push(new Character(type_name, GetMobClass(type_name)));
+
+    RebuildUI();
+  };
+
+  dialog.showModal();
 }
 
 function RebuildUI() {
