@@ -219,6 +219,9 @@ function AddPlayer() {
   dialog.onclose = function() {
     console.log("selected: " + class_select.value + ", " + name_input.value);
 
+    if (dialog.returnValue == "cancel")
+      return;
+
     var player_name = name_input.value;
     var class_name = class_select.value;
 
@@ -244,6 +247,9 @@ function AddMob() {
 
   dialog.onclose = function() {
     console.log("selected: " + type_select.value);
+
+    if (dialog.returnValue == "cancel")
+      return;
 
     var type_name = type_select.value;
 
