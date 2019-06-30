@@ -37,7 +37,7 @@ class Skill {
     this.self_only = false;
     this.extends_hp = false;
     this.is_debuf = false;
-    this.is_multi_turn_action = false;
+    this.is_channeled = false;
   }
 
   IsDamagingSkill() {
@@ -110,7 +110,7 @@ function BuildWarriorClass() {
   sword_tornado.damage_upper = 10;
   sword_tornado.aoe = true;
   sword_tornado.duration = 3;
-  sword_tornado.is_multi_turn_action = true;
+  sword_tornado.is_channeled = true;
   warrior_class.skills.push(sword_tornado);
 }
 
@@ -134,7 +134,7 @@ function BuildPaladinClass() {
   flash_of_light.healing = 50;
   flash_of_light.cast_time = 1;
   flash_of_light.duration = 2;  // Hack
-  flash_of_light.is_multi_turn_action = true;
+  flash_of_light.is_channeled = true;
   paladin_class.skills.push(flash_of_light);
 }
 
@@ -157,7 +157,7 @@ function BuildWizardClass() {
   blizzard.damage_upper = 20;
   blizzard.duration = 5;
   blizzard.aoe = true;
-  blizzard.is_multi_turn_action = true;
+  blizzard.is_channeled = true;
   wizard_class.skills.push(blizzard);
 
 }
@@ -695,7 +695,7 @@ function ApplyDebufToCharacter(character, skill) {
 }
 
 function MaybeApplySkillToCharacter(character, skill) {
-  if (skill.is_multi_turn_action)
+  if (skill.is_channeled)
     character.current_action = new Action(skill, skill.duration - 1);
   if (skill.cool_down > 0)
     character.cool_downs.push(new CoolDown(skill, skill.cool_down));
