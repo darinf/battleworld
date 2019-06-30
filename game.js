@@ -261,6 +261,28 @@ function AddMob() {
   dialog.showModal();
 }
 
+function ShowYouWinDialog() {
+  var dialog = document.getElementById("game_over_win");
+
+  dialog.onclose = function() {
+    location.reload();
+    RebuildUI();
+  }
+
+  dialog.showModal();
+}
+
+function ShowYouLoseDialog() {
+  var dialog = document.getElementById("game_over_lose");
+
+  dialog.onclose = function() {
+    location.reload();
+    RebuildUI();
+  }
+
+  dialog.showModal();
+}
+
 function RebuildUI() {
   var players_div = document.getElementById("players");
   var mobs_div = document.getElementById("mobs");
@@ -391,6 +413,7 @@ function Battle() {
 
   active_character_index = 0;
 
+  UpdateTargetOfPlayers();
   UpdateTargetOfMobs();
   RebuildUI();
 }
@@ -405,6 +428,32 @@ function SkipTurn() {
 }
 
 function NextTurn() {
+  // Check if game over.
+  var any_alive = false;
+  for (var player of players) {
+    if (player.hp > 0) {
+      any_alive = true;
+      break;
+    }
+  }
+  if (!any_alive) {
+    ShowYouLoseDialog();
+    return;
+  }
+
+  // Now check for victory.
+  any_alive = false;
+  for (var mob of mobs) {
+    if (mob.hp > 0) {
+      any_alive = true;
+      break;
+    }
+  }
+  if (!any_alive) {
+    ShowYouWinDialog();
+    return;
+  }
+
   UpdateCoolDowns(GetCharacter(active_character_index));
 
   var total_players = players.length;
@@ -417,6 +466,7 @@ function NextTurn() {
   if (active_character_index == total_characters)
     active_character_index = 0;
 
+  UpdateTargetOfPlayers();
   UpdateTargetOfMobs();
 
   if (GetCharacter(active_character_index).hp == 0)
@@ -448,6 +498,38 @@ function UpdateCurrentAction(character) {
 
   if (--character.current_action.duration == 0)
     character.current_action = null;
+}
+
+function UpdateTargetOfPlayers() {
+  var total_players = players.length;
+  var total_mobs = mobs.length;
+  var total_characters = total_players + total_mobs;
+
+  // Make sure all players are targeting something (not -1), and if targeting
+  // a mob that is already dead, target the next mob automatically.
+  
+  for (var player of players) {
+    if (player.target_character_index == -1) {
+      // Target first mob that is not dead.
+      for (var index = 0; index < total_mobs; ++index) {
+        var mob = mobs[index];
+        if (mob.hp > 0) {
+          player.target_character_index = total_players + index;
+          break;
+        }
+      }
+    } else if (player.target_character_index >= total_players) {
+      // If target is a dead mob, advance to next non dead mob. 
+      var index = player.target_character_index - total_players;
+      var mob = mobs[index];
+      while (mob.hp == 0) {
+        index = (index + 1) % total_mobs;
+        if (index == (player.target_character_index - total_players))
+          break;
+      }
+      player.target_character_index = total_players + index;
+    }
+  }
 }
 
 function UpdateTargetOfMobs() {
