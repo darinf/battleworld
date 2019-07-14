@@ -87,9 +87,9 @@ class Character {
   }
 }
 
-let warrior_class;
-let paladin_class;
-let wizard_class;
+let warrior_class = null;
+let paladin_class = null;
+let wizard_class = null;
 
 function BuildWarriorClass() {
   warrior_class = new CharacterClass("warrior", 250);
@@ -389,12 +389,10 @@ function RebuildUI() {
   let add_player_button = document.getElementById("add_player_button");
   let add_mob_button = document.getElementById("add_mob_button");
   let battle_button = document.getElementById("battle_button");
-  //let skipturn_button = document.getElementById("skipturn_button");
 
   if (active_character_index == -1) {
     add_player_button.removeAttribute("disabled");
     add_mob_button.removeAttribute("disabled");
-    //skipturn_button.setAttribute("disabled", "true");
     if (players.length == 0 || mobs.length == 0) {
       battle_button.setAttribute("disabled", "true");
     } else {
@@ -404,7 +402,6 @@ function RebuildUI() {
     add_player_button.setAttribute("disabled", "true");
     add_mob_button.setAttribute("disabled", "true");
     battle_button.setAttribute("disabled", "true");
-    //skipturn_button.removeAttribute("disabled");
   }
 }
 
