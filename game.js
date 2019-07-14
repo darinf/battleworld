@@ -636,7 +636,7 @@ function DoSkill() {
       if (IsPlayer(target_character_index)) {
         target_characters.push(GetCharacter(target_character_index));
       } else {
-        target_characters.push(player);  // Apply healing skill to self.
+        target_characters.push(active_player);  // Apply healing skill to self.
       }
     } else {
       if (IsMob(target_character_index))
