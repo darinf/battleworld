@@ -60,8 +60,9 @@ class CoolDown {
 }
 
 class Action {
-  constructor(skill, duration) {
+  constructor(skill, target_characters, duration) {
     this.skill = skill;
+    this.target_characters = target_characters;
     this.duration = duration;
   }
 }
@@ -86,26 +87,26 @@ class Character {
   }
 }
 
-var warrior_class;
-var paladin_class;
-var wizard_class;
+let warrior_class;
+let paladin_class;
+let wizard_class;
 
 function BuildWarriorClass() {
   warrior_class = new CharacterClass("warrior", 250);
 
-  var slam = new Skill("Slam");
+  let slam = new Skill("Slam");
   slam.damage_lower = 30;
   slam.damage_upper = 30;
   warrior_class.skills.push(slam);
 
-  var last_stand = new Skill("Last Stand");
+  let last_stand = new Skill("Last Stand");
   last_stand.healing = 100;
   last_stand.cool_down = 10;
   last_stand.self_only = true;
   last_stand.extends_hp = true;
   warrior_class.skills.push(last_stand);
 
-  var sword_tornado = new Skill("Sword Tornado");
+  let sword_tornado = new Skill("Sword Tornado");
   sword_tornado.damage_lower = 10;
   sword_tornado.damage_upper = 10;
   sword_tornado.aoe = true;
@@ -117,12 +118,12 @@ function BuildWarriorClass() {
 function BuildPaladinClass() {
   paladin_class = new CharacterClass("paladin", 200);
 
-  var judgement = new Skill("Judgement");
+  let judgement = new Skill("Judgement");
   judgement.damage_lower = 30;
   judgement.damage_upper = 30;
   paladin_class.skills.push(judgement);
 
-  var consecration = new Skill("Consecration");
+  let consecration = new Skill("Consecration");
   consecration.damage_lower = 10;
   consecration.damage_upper = 10;
   consecration.duration = 5;
@@ -130,29 +131,28 @@ function BuildPaladinClass() {
   consecration.is_debuf = true;  // Hack
   paladin_class.skills.push(consecration);
 
-  var flash_of_light = new Skill("Flash of Light");
+  let flash_of_light = new Skill("Flash of Light");
   flash_of_light.healing = 50;
   flash_of_light.cast_time = 1;
-  flash_of_light.duration = 2;  // Hack
-  flash_of_light.is_channeled = true;
+  flash_of_light.is_channeled = false;
   paladin_class.skills.push(flash_of_light);
 }
 
 function BuildWizardClass() {
   wizard_class = new CharacterClass("wizard", 100);
 
-  var arcane_shield = new Skill("Arcane Shield");
+  let arcane_shield = new Skill("Arcane Shield");
   arcane_shield.healing = 100;
   arcane_shield.cool_down = 3;
   arcane_shield.extends_hp = true;
   wizard_class.skills.push(arcane_shield);
 
-  var fire_blast = new Skill("Fire Blast");
+  let fire_blast = new Skill("Fire Blast");
   fire_blast.damage_lower = 50;
   fire_blast.damage_upper = 50;
   wizard_class.skills.push(fire_blast);
 
-  var blizzard = new Skill("Blizzard");
+  let blizzard = new Skill("Blizzard");
   blizzard.damage_lower = 20;
   blizzard.damage_upper = 20;
   blizzard.duration = 5;
@@ -163,9 +163,9 @@ function BuildWizardClass() {
 }
 
 function NewBasicClass(name, hp, damage_lower, damage_upper) {
-  var new_class = new CharacterClass(name, hp);
+  let new_class = new CharacterClass(name, hp);
 
-  var strike = new Skill("Strike");
+  let strike = new Skill("Strike");
   strike.damage_lower = damage_lower;
   strike.damage_upper = damage_upper;
   new_class.skills.push(strike);
@@ -185,7 +185,7 @@ function GetPlayerClass(name) {
   return null;
 }
 
-var basic_mobs = [
+let basic_mobs = [
   {name: "Naga", hp: 100, damage: [10, 60]},
   {name: "Imp", hp: 50, damage: [5, 30]},
   {name: "Demon", hp: 200, damage: [15, 90]},
@@ -193,7 +193,7 @@ var basic_mobs = [
 ];
 
 function GetMobClass(name) {
-  for (var mob of basic_mobs) {
+  for (let mob of basic_mobs) {
     if (mob.name == name)
       return NewBasicClass(mob.name, mob.hp, mob.damage[0], mob.damage[1]);
   }
@@ -207,14 +207,14 @@ function Initialize() {
   RebuildUI();
 }
 
-var players = [];
-var mobs = [];
-var active_character_index = -1;
+let players = [];
+let mobs = [];
+let active_character_index = -1;
 
 function AddPlayer() {
-  var dialog = document.getElementById("add_player_dialog");
-  var class_select = dialog.getElementsByTagName("select")[0];
-  var name_input = dialog.getElementsByTagName("input")[0];
+  let dialog = document.getElementById("add_player_dialog");
+  let class_select = dialog.getElementsByTagName("select")[0];
+  let name_input = dialog.getElementsByTagName("input")[0];
 
   dialog.onclose = function() {
     console.log("selected: " + class_select.value + ", " + name_input.value);
@@ -222,8 +222,8 @@ function AddPlayer() {
     if (dialog.returnValue == "cancel")
       return;
 
-    var player_name = name_input.value;
-    var class_name = class_select.value;
+    let player_name = name_input.value;
+    let class_name = class_select.value;
 
     players.push(new Character(player_name, GetPlayerClass(class_name)));
 
@@ -234,13 +234,13 @@ function AddPlayer() {
 }
 
 function AddMob() {
-  var dialog = document.getElementById("add_mob_dialog");
-  var type_select = dialog.getElementsByTagName("select")[0];
+  let dialog = document.getElementById("add_mob_dialog");
+  let type_select = dialog.getElementsByTagName("select")[0];
 
   // Build out the set of options dynamically.
   type_select.innerHTML = "";
-  for (var mob of basic_mobs) {
-    var option = document.createElement("OPTION");
+  for (let mob of basic_mobs) {
+    let option = document.createElement("OPTION");
     option.appendChild(document.createTextNode(mob.name));
     type_select.appendChild(option);
   }
@@ -251,7 +251,7 @@ function AddMob() {
     if (dialog.returnValue == "cancel")
       return;
 
-    var type_name = type_select.value;
+    let type_name = type_select.value;
 
     mobs.push(new Character(type_name, GetMobClass(type_name)));
 
@@ -262,7 +262,7 @@ function AddMob() {
 }
 
 function ShowYouWinDialog() {
-  var dialog = document.getElementById("game_over_win");
+  let dialog = document.getElementById("game_over_win");
 
   dialog.onclose = function() {
     location.reload();
@@ -273,7 +273,7 @@ function ShowYouWinDialog() {
 }
 
 function ShowYouLoseDialog() {
-  var dialog = document.getElementById("game_over_lose");
+  let dialog = document.getElementById("game_over_lose");
 
   dialog.onclose = function() {
     location.reload();
@@ -284,17 +284,17 @@ function ShowYouLoseDialog() {
 }
 
 function RebuildUI() {
-  var players_div = document.getElementById("players");
-  var mobs_div = document.getElementById("mobs");
+  let players_div = document.getElementById("players");
+  let mobs_div = document.getElementById("mobs");
 
-  var character_index = 0;
+  let character_index = 0;
 
   // players:
 
   players_div.innerHTML = "<b>Players</b>";
 
-  for (var player of players) {
-    var div = document.createElement("DIV");
+  for (let player of players) {
+    let div = document.createElement("DIV");
 
     if (character_index == active_character_index)
       div.setAttribute("class", "character_box active_character");
@@ -305,19 +305,19 @@ function RebuildUI() {
         "[" + character_index + "] " + player.name + " (" + player.hp + "hp) " +
         " target: ";
 
-    var input = document.createElement("INPUT");
+    let input = document.createElement("INPUT");
     input.setAttribute("value", player.target_character_index);
     input.setAttribute("onchange", "DoSetTargetCharacterIndex()");
     if (character_index != active_character_index)
       input.setAttribute("disabled", "true");
     div.appendChild(input);
         
-    for (var skill of player.character_class.skills) {
-      var input = document.createElement("INPUT");
+    for (let skill of player.character_class.skills) {
+      let input = document.createElement("INPUT");
       input.setAttribute("type", "button");
       input.setAttribute("onclick", "DoSkill()");
 
-      var cool_down = GetCoolDown(player, skill);
+      let cool_down = GetCoolDown(player, skill);
       if (cool_down) {
         input.setAttribute("value", skill.name + " (" + cool_down.duration + ")");
       } else {
@@ -335,7 +335,7 @@ function RebuildUI() {
           document.createTextNode(
               "action: " + player.current_action.skill.name +
               " (" + player.current_action.duration + ")"));
-      var input = document.createElement("INPUT");
+      let input = document.createElement("INPUT");
       input.setAttribute("type", "button");
       input.setAttribute("onclick", "SkipTurn()");
       input.setAttribute("value", "Continue");
@@ -353,8 +353,8 @@ function RebuildUI() {
 
   mobs_div.innerHTML = "<b>Mobs</b>";
 
-  for (var mob of mobs) {
-    var div = document.createElement("DIV");
+  for (let mob of mobs) {
+    let div = document.createElement("DIV");
 
     if (character_index == active_character_index)
       div.setAttribute("class", "character_box active_character");
@@ -365,7 +365,7 @@ function RebuildUI() {
         "[" + character_index + "] " + mob.name + " (" + mob.hp + "hp) " +
         " target: " + mob.target_character_index;
 
-    var input = document.createElement("INPUT");
+    let input = document.createElement("INPUT");
     input.setAttribute("type", "button");
     input.setAttribute("value", "Take turn");
     input.setAttribute("onclick", "DoMobTurn()");
@@ -375,7 +375,7 @@ function RebuildUI() {
         
     if (mob.debufs.length > 0) {
       div.appendChild(document.createTextNode("debufs: "));
-      for (var debuf of mob.debufs) {
+      for (let debuf of mob.debufs) {
         div.appendChild(
             document.createTextNode(debuf.skill.name + " (" + debuf.duration + ") "));
       }
@@ -386,10 +386,10 @@ function RebuildUI() {
     character_index++;
   }
 
-  var add_player_button = document.getElementById("add_player_button");
-  var add_mob_button = document.getElementById("add_mob_button");
-  var battle_button = document.getElementById("battle_button");
-  //var skipturn_button = document.getElementById("skipturn_button");
+  let add_player_button = document.getElementById("add_player_button");
+  let add_mob_button = document.getElementById("add_mob_button");
+  let battle_button = document.getElementById("battle_button");
+  //let skipturn_button = document.getElementById("skipturn_button");
 
   if (active_character_index == -1) {
     add_player_button.removeAttribute("disabled");
@@ -429,8 +429,8 @@ function SkipTurn() {
 
 function NextTurn() {
   // Check if game over.
-  var any_alive = false;
-  for (var player of players) {
+  let any_alive = false;
+  for (let player of players) {
     if (player.hp > 0) {
       any_alive = true;
       break;
@@ -443,7 +443,7 @@ function NextTurn() {
 
   // Now check for victory.
   any_alive = false;
-  for (var mob of mobs) {
+  for (let mob of mobs) {
     if (mob.hp > 0) {
       any_alive = true;
       break;
@@ -456,9 +456,9 @@ function NextTurn() {
 
   UpdateCoolDowns(GetCharacter(active_character_index));
 
-  var total_players = players.length;
-  var total_mobs = mobs.length;
-  var total_characters = total_players + total_mobs;
+  let total_players = players.length;
+  let total_mobs = mobs.length;
+  let total_characters = total_players + total_mobs;
 
   active_character_index++;
 
@@ -474,8 +474,8 @@ function NextTurn() {
 }
 
 function UpdateCoolDowns(character) {
-  var new_cool_downs = [];
-  for (var cool_down of character.cool_downs) {
+  let new_cool_downs = [];
+  for (let cool_down of character.cool_downs) {
     cool_down.duration--;
     if (cool_down.duration > 0)
       new_cool_downs.push(cool_down); 
@@ -487,32 +487,32 @@ function UpdateCurrentAction(character) {
   if (!character.current_action)
     return;
 
-  var skill = character.current_action.skill;
+  character.current_action.duration--;
 
-  // We only know how to update actions that are AOE damaging skills.
-  if (!(skill.aoe && skill.IsDamagingSkill()))
-    return;
+  let skill = character.current_action.skill;
+  if (skill.cast_time == 0 || character.current_action.duration == 0) {
+    for (let target_character of character.current_action.target_characters) {
+      ApplySkillToCharacter(target_character, skill);
+    }
+  }
 
-  for (var mob of mobs)
-    ApplySkillToCharacter(mob, skill);
-
-  if (--character.current_action.duration == 0)
+  if (character.current_action.duration == 0)
     character.current_action = null;
 }
 
 function UpdateTargetOfPlayers() {
-  var total_players = players.length;
-  var total_mobs = mobs.length;
-  var total_characters = total_players + total_mobs;
+  let total_players = players.length;
+  let total_mobs = mobs.length;
+  let total_characters = total_players + total_mobs;
 
   // Make sure all players are targeting something (not -1), and if targeting
   // a mob that is already dead, target the next mob automatically.
   
-  for (var player of players) {
+  for (let player of players) {
     if (player.target_character_index == -1) {
       // Target first mob that is not dead.
-      for (var index = 0; index < total_mobs; ++index) {
-        var mob = mobs[index];
+      for (let index = 0; index < total_mobs; ++index) {
+        let mob = mobs[index];
         if (mob.hp > 0) {
           player.target_character_index = total_players + index;
           break;
@@ -520,8 +520,8 @@ function UpdateTargetOfPlayers() {
       }
     } else if (player.target_character_index >= total_players) {
       // If target is a dead mob, advance to next non dead mob. 
-      var index = player.target_character_index - total_players;
-      var mob = mobs[index];
+      let index = player.target_character_index - total_players;
+      let mob = mobs[index];
       while (mob.hp == 0) {
         index = (index + 1) % total_mobs;
         if (index == (player.target_character_index - total_players))
@@ -533,29 +533,29 @@ function UpdateTargetOfPlayers() {
 }
 
 function UpdateTargetOfMobs() {
-  var total_players = players.length;
-  var total_mobs = mobs.length;
-  var total_characters = total_players + total_mobs;
+  let total_players = players.length;
+  let total_mobs = mobs.length;
+  let total_characters = total_players + total_mobs;
 
   // For now, we just always have mobs target the warrior, but we should do
   // something more interesting based on threat calculations.
 
-  var index;
+  let index;
 
   for (index = 0; index < total_players; ++index) {
-    var player = players[index];
+    let player = players[index];
     if (player.hp != 0 && player.character_class.name == "Warrior")
       break;
   }
   if (index == total_players) {  // Fallback to first player.
     for (index = 0; index < total_players; ++index) {
-      var player = players[index];
+      let player = players[index];
       if (player.hp != 0)
         break;
     }
   }
 
-  for (var mob of mobs) {
+  for (let mob of mobs) {
     if (mob.hp == 0) {
       mob.target_character_index = -1;
     } else {
@@ -565,9 +565,9 @@ function UpdateTargetOfMobs() {
 }
 
 function GetCharacter(index) {
-  var total_players = players.length;
-  var total_mobs = mobs.length;
-  var total_characters = total_players + total_mobs;
+  let total_players = players.length;
+  let total_mobs = mobs.length;
+  let total_characters = total_players + total_mobs;
 
   if (index < 0)
     return null;
@@ -579,69 +579,95 @@ function GetCharacter(index) {
   return null;
 }
 
+function IsPlayer(index) {
+  return index >= 0 && index < players.length;
+}
+
+function IsMob(index) {
+  let total_players = players.length;
+  let total_mobs = mobs.length;
+  let total_characters = total_players + total_mobs;
+
+  return index >= total_players && index < total_characters;
+}
+
 function DoSkill() {
-  var input = event.target;
+  let input = event.target;
 
   console.log("DoSkill: " + input.value);
-  var selected_skill_name = input.value;
+  let selected_skill_name = input.value;
 
-  var player = players[active_character_index];
+  let active_player = players[active_character_index];
 
   // Replaces any current action.
-  player.current_action = null;
+  active_player.current_action = null;
 
   // Find the selected skill
-  var selected_skill;
-  for (var skill of player.character_class.skills) {
+  let selected_skill;
+  for (let skill of active_player.character_class.skills) {
     if (skill.name == selected_skill_name)
       selected_skill = skill;
   }
 
   // If on cool down, then we cannot perform this action now.
   // Should not be reached if on cool down.
-  for (var cool_down of player.cool_downs) {
+  for (let cool_down of active_player.cool_downs) {
     if (cool_down.skill.name == selected_skill.name)
       throw "Oops: selected skill was on cool down!";
   }
 
-  var do_next_turn = false;
-
+  // Build list of targets for the skill.
+  let target_characters = [];
   if (selected_skill.aoe) {
-    for (var mob of mobs) {
-      if (selected_skill.is_debuf) {
-        ApplyDebufToCharacter(mob, selected_skill);
-      } else {
-        ApplySkillToCharacter(mob, selected_skill);
+    if (selected_skill.healing) {
+      for (let player of players) {
+        target_characters.push(player);
+      }
+    } else {
+      for (let mob of mobs) {
+        target_characters.push(mob);
       }
     }
-    MaybeApplySkillToCharacter(player, selected_skill);
-    do_next_turn = true;
+  } else if (selected_skill.self_only) {
+    target_characters.push(active_player);
   } else {
-    // Find the target character
-    var target_character;
-    var target_character_index = player.target_character_index;
-    if (target_character_index < 0 || selected_skill.self_only) {
-      target_character = player;
-      target_character_index = active_character_index;
-    } else {
-      target_character = GetCharacter(target_character_index);
-    }
-    if (selected_skill.IsDamagingSkill() &&
-        target_character_index == active_character_index) {
-      console.log("Cannot apply skill to self.");
-    } else {
-      if (selected_skill.is_debuf) {
-        ApplyDebufToCharacter(target_character, selected_skill);
+    let target_character_index = active_player.target_character_index;
+    if (selected_skill.healing) {
+      if (IsPlayer(target_character_index)) {
+        target_characters.push(GetCharacter(target_character_index));
       } else {
-        ApplySkillToCharacter(target_character, selected_skill);
+        target_characters.push(player);  // Apply healing skill to self.
       }
-      MaybeApplySkillToCharacter(player, selected_skill);
-      do_next_turn = true;
+    } else {
+      if (IsMob(target_character_index))
+        target_characters.push(GetCharacter(target_character_index));
     }
   }
 
-  if (do_next_turn)
+  if (target_characters.length == 0) {
+    console.log("No target characters for skill!");
+  } else {
+    if (selected_skill.cast_time == 0) {
+      for (let character of target_characters) {
+        if (selected_skill.is_debuf) {
+          ApplyDebufToCharacter(character, selected_skill);
+        } else {
+          ApplySkillToCharacter(character, selected_skill);
+        }
+      }
+    }
+
+    if (selected_skill.is_channeled) {
+      active_player.current_action = new Action(selected_skill, target_characters, selected_skill.duration - 1);
+    } else if (selected_skill.cast_time > 0) {
+      active_player.current_action = new Action(selected_skill, target_characters, selected_skill.cast_time);
+    }
+
+    if (selected_skill.cool_down > 0)
+      active_player.cool_downs.push(new CoolDown(selected_skill, selected_skill.cool_down));
+
     NextTurn();
+  }
 
   RebuildUI();
 }
@@ -649,7 +675,7 @@ function DoSkill() {
 function ApplySkillToCharacter(character, skill) {
   // Apply damaging effects
   if (skill.IsDamagingSkill()) {
-    var damage;
+    let damage;
     if (skill.damage_lower == skill.damage_upper) {
       damage = skill.damage_lower;
     } else {
@@ -668,8 +694,8 @@ function ApplySkillToCharacter(character, skill) {
 
   // Apply healing effects
   if (skill.healing > 0) {
-    var healing;
-    var max_hp = character.character_class.hp;
+    let healing;
+    let max_hp = character.character_class.hp;
     if (!skill.extends_hp && character.hp + skill.healing > max_hp) {
       healing = max_hp - character.hp;
     } else {
@@ -685,7 +711,7 @@ function ApplyDebufToCharacter(character, skill) {
     throw "Oops: skill is not a debuf!";
 
   // Overwrite existing version of the same skill.
-  for (var debuf of character.debufs) {
+  for (let debuf of character.debufs) {
     if (debuf.skill.name == skill.name) {
       debuf.duration = skill.duration;
       return;
@@ -694,15 +720,8 @@ function ApplyDebufToCharacter(character, skill) {
   character.debufs.push(new Debuf(skill, skill.duration));
 }
 
-function MaybeApplySkillToCharacter(character, skill) {
-  if (skill.is_channeled)
-    character.current_action = new Action(skill, skill.duration - 1);
-  if (skill.cool_down > 0)
-    character.cool_downs.push(new CoolDown(skill, skill.cool_down));
-}
-
 function GetCoolDown(character, skill) {
-  for (var cool_down of character.cool_downs) {
+  for (let cool_down of character.cool_downs) {
     if (cool_down.skill.name == skill.name)
       return cool_down;
   }
@@ -710,17 +729,17 @@ function GetCoolDown(character, skill) {
 }
 
 function DoSetTargetCharacterIndex() {
-  var input = event.target;
+  let input = event.target;
 
   console.log("DoSetTargetCharacterIndex: " + input.value);
 
-  var total_players = players.length;
-  var total_mobs = mobs.length;
-  var total_characters = total_players + total_mobs;
+  let total_players = players.length;
+  let total_mobs = mobs.length;
+  let total_characters = total_players + total_mobs;
 
-  var new_index = input.value;
+  let new_index = input.value;
   if (new_index < total_characters && new_index >= 0) {
-    var player = players[active_character_index];
+    let player = players[active_character_index];
     player.target_character_index = input.value;
   } else {
     player.target_character_index = -1;
@@ -730,20 +749,20 @@ function DoSetTargetCharacterIndex() {
 }
 
 function DoMobTurn() {
-  var input = event.target;
+  let input = event.target;
 
   console.log("DoMobTurn");
 
-  var total_players = players.length;
-  var total_mobs = mobs.length;
-  var total_characters = total_players + total_mobs;
+  let total_players = players.length;
+  let total_mobs = mobs.length;
+  let total_characters = total_players + total_mobs;
 
-  var mob = mobs[active_character_index - total_players];
+  let mob = mobs[active_character_index - total_players];
 
   // Process any debufs
 
-  var remaining_debufs = [];
-  for (var debuf of mob.debufs) {
+  let remaining_debufs = [];
+  for (let debuf of mob.debufs) {
     ApplySkillToCharacter(mob, debuf.skill);
     if (--debuf.duration > 0)
       remaining_debufs.push(debuf);
@@ -755,7 +774,7 @@ function DoMobTurn() {
     NextTurn();
   } else {
     // Find target player
-    var target_player = players[mob.target_character_index];
+    let target_player = players[mob.target_character_index];
     if (target_player.hp == 0) {
       console.log("Target is a dead player.");
     } else {
