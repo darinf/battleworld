@@ -8,13 +8,19 @@
 //  Slam: 30 damage
 //  Last Stand: 100 hp (cooldown: 10 turns)
 //  Sword Tornado: 10 AOE damage for 3 turns
-
+//  Level 2:
+//   Ignore Pain: reduces damage by 50% for 4 turns
+//   Taunt: gives warrior max threat for target mob
+//
 // Paladin
 // HP: 200
 // Skills:
 //  Judgement: 30 damage
 //  Consecration: 10 AOE damage for 5 turns
 //  Flash of light: 50 hp (cast time: 1 turn)
+//  Level 2:
+//   Light of the Protector: 40 hp (cooldown: 2 turns)
+//   Divine Shield: prevents all damage done to you for 3 turns (cooldown: 15 turns)
 //
 // Wizard
 // HP: 100
@@ -22,6 +28,19 @@
 //  Arcane Shield: 100 hp (cooldown: 3 turns)
 //  Fire Blast: 50 damage
 //  Blizzard: 20 AOE damage for 5 turns
+//  Level 2:
+//   Arcane Blast: 120 damage (cast time: 1 turn)
+//   Frost Nova: AOE prevents all mobs from attacking for 1 turn (cooldown: 5 turns)
+//
+// Priest
+// HP: 100
+// Skills:
+//  Smite: 40 damage
+//  Flash Heal: 70 hp (cast time: 1 turn)
+//  Renew: 10 AOE healing for 5 turns
+//  Level 2:
+//   Holy Nova: 20 AOE healing instantly
+//   Power Word - Shield: places shield on friendly target for 120 hp (cooldown: 2 turns)
 //
 
 class Skill {
@@ -590,10 +609,12 @@ function IsMob(index) {
 function DoSkill() {
   let input = event.target;
 
-  console.log("DoSkill: " + input.value);
+  console.log("DoSkill: " + input.value + " {{{");
   let selected_skill_name = input.value;
 
   let active_player = g_players[g_active_character_index];
+
+  console.log("active player is " + active_player.name);
 
   // Replaces any current action.
   active_player.current_action = null;
@@ -664,6 +685,8 @@ function DoSkill() {
 
     NextTurn();
   }
+
+	console.log("}}}");
 
   RebuildUI();
 }
@@ -747,13 +770,15 @@ function DoSetTargetCharacterIndex() {
 function DoMobTurn() {
   let input = event.target;
 
-  console.log("DoMobTurn");
+  console.log("DoMobTurn: " + g_active_character_index + " {{{");
 
   let total_players = g_players.length;
   let total_mobs = g_mobs.length;
   let total_characters = total_players + total_mobs;
 
   let mob = g_mobs[g_active_character_index - total_players];
+
+  console.log("active mob is " + mob.name);
 
   // Process any debufs
 
@@ -779,6 +804,8 @@ function DoMobTurn() {
       NextTurn();
     }
   }
+
+	console.log("}}}");
 
   RebuildUI();
 }
