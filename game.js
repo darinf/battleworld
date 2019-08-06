@@ -11,6 +11,8 @@
 //  Level 2:
 //   Ignore Pain: reduces damage by 50% for 4 turns
 //   Taunt: gives warrior max threat for target mob
+//  Level 3:
+//   Sweeping Strikes: next 3 attacks also hit all nearby mobs
 //
 // Paladin
 // HP: 200
@@ -21,6 +23,8 @@
 //  Level 2:
 //   Light of the Protector: 40 hp (cooldown: 2 turns)
 //   Divine Shield: prevents all damage done to you for 3 turns (cooldown: 15 turns)
+//  Level 3:
+//   Avenger's Shield: hits up to 2 additional mobs after the target mob for 25 hp (cooldown: 1 turn) and silences mobs for 1 turn
 //
 // Wizard
 // HP: 100
@@ -31,6 +35,8 @@
 //  Level 2:
 //   Arcane Blast: 120 damage (cast time: 1 turn)
 //   Frost Nova: AOE prevents all mobs from attacking for 1 turn (cooldown: 5 turns)
+//  Level 3:
+//   Polymorph: prevents mob from attacking for 2 turns (cast time: 1 turn)
 //
 // Priest
 // HP: 100
@@ -41,6 +47,8 @@
 //  Level 2:
 //   Holy Nova: 20 AOE healing instantly
 //   Power Word - Shield: places shield on friendly target for 120 hp (cooldown: 2 turns)
+//  Level 3:
+//   Resurrection: brings target player back to life w/ half hp (cast time: 2 turns)
 //
 
 class Skill {
