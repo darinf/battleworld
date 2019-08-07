@@ -193,8 +193,8 @@ function BuildPriestClass() {
   let new_class = new CharacterClass("priest", 100);
 
   let smite = new Skill("Smite");
-  fire_blast.damage_lower = 40;
-  fire_blast.damage_upper = 40;
+  smite.damage_lower = 40;
+  smite.damage_upper = 40;
   new_class.skills.push(smite);
 
   let flash_heal = new Skill("Flash Heal");
@@ -221,22 +221,14 @@ function NewBasicClass(name, hp, damage_lower, damage_upper) {
   return new_class;
 }
 
-let g_warrior_class = null;
-let g_paladin_class = null;
-let g_wizard_class = null;
-let g_priest_class = null;
+let g_player_classes = [];
 
 function GetPlayerClass(class_name) {
-  switch (class_name.toLowerCase()) {
-    case g_paladin_class.name:
-      return g_paladin_class;
-    case g_warrior_class.name:
-      return g_warrior_class;
-    case g_wizard_class.name:
-      return g_wizard_class;
-    case g_priest_class.name:
-      return g_priest_class;
-  }
+	let lower_class_name = class_name.toLowerCase();
+	for (let i = 0; i < g_player_classes.length; ++i) {
+		if (lower_class_name == g_player_classes[i].name)
+			return g_player_classes[i];
+	}
   return null;
 }
 
@@ -256,10 +248,15 @@ function GetMobClass(name) {
 }
 
 function Initialize() {
-  g_warrior_class = BuildWarriorClass();
-  g_paladin_class = BuildPaladinClass();
-  g_wizard_class = BuildWizardClass();
-  g_priest_class = BuildPriestClass();
+	const kClassBuilders = [
+		BuildPaladinClass,
+		BuildPriestClass,
+		BuildWarriorClass,
+		BuildWizardClass,
+	];
+	for (let f of kClassBuilders)
+		g_player_classes.push(f());
+
   RebuildUI();
 }
 
@@ -271,6 +268,12 @@ function AddPlayer() {
   let dialog = document.getElementById("add_player_dialog");
   let class_select = dialog.getElementsByTagName("select")[0];
   let name_input = dialog.getElementsByTagName("input")[0];
+
+	for (let player_class of g_player_classes) {
+		let option = document.createElement("OPTION");
+    option.appendChild(document.createTextNode(player_class.name));
+    class_select.appendChild(option);
+	}
 
   dialog.onclose = function() {
     console.log("selected: " + class_select.value + ", " + name_input.value);
@@ -295,9 +298,9 @@ function AddMob() {
 
   // Build out the set of options dynamically.
   type_select.innerHTML = "";
-  for (let mob of g_basic_mobs) {
+  for (let mob_type of g_basic_mobs) {
     let option = document.createElement("OPTION");
-    option.appendChild(document.createTextNode(mob.name));
+    option.appendChild(document.createTextNode(mob_type.name));
     type_select.appendChild(option);
   }
 
