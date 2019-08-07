@@ -137,17 +137,7 @@ function RebuildUI() {
 		div.appendChild(target_div);
 
     div.appendChild(document.createTextNode( 
-        "[" + character_index + "] " + player.name + " (" + player.hp + "hp) " +
-        " target: " + player.target_character_index));
-
-/*
-    let input = document.createElement("INPUT");
-    input.setAttribute("value", player.target_character_index);
-    //XXX input.setAttribute("onchange", "DoSetTargetCharacterIndex()");
-    //XXX if (character_index != g_battle.active_character_index)
-    input.setAttribute("disabled", "true");
-    div.appendChild(input);
-*/
+        "[" + character_index + "] " + player.name + " (" + player.hp + "hp) "));
         
     for (let skill of player.character_class.skills) {
       let input = document.createElement("INPUT");
@@ -207,8 +197,7 @@ function RebuildUI() {
 		div.appendChild(target_div);
 
     div.appendChild(document.createTextNode(
-        "[" + character_index + "] " + mob.name + " (" + mob.hp + "hp) " +
-        " target: " + mob.target_character_index));
+        "[" + character_index + "] " + mob.name + " (" + mob.hp + "hp) "));
 
     let input = document.createElement("INPUT");
     input.setAttribute("type", "button");
