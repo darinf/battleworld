@@ -43,7 +43,7 @@
 // Skills:
 //  Smite: 40 damage
 //  Flash Heal: 70 hp (cast time: 1 turn)
-//  Renew: 10 AOE healing for 5 turns
+//  Renew: 10 healing for 5 turns
 //  Level 2:
 //   Holy Nova: 20 AOE healing instantly
 //   Power Word - Shield: places shield on friendly target for 120 hp (cooldown: 2 turns)
@@ -114,24 +114,20 @@ class Character {
   }
 }
 
-let g_warrior_class = null;
-let g_paladin_class = null;
-let g_wizard_class = null;
-
 function BuildWarriorClass() {
-  g_warrior_class = new CharacterClass("warrior", 250);
+  let new_class = new CharacterClass("warrior", 250);
 
   let slam = new Skill("Slam");
   slam.damage_lower = 30;
   slam.damage_upper = 30;
-  g_warrior_class.skills.push(slam);
+  new_class.skills.push(slam);
 
   let last_stand = new Skill("Last Stand");
   last_stand.healing = 100;
   last_stand.cool_down = 10;
   last_stand.self_only = true;
   last_stand.extends_hp = true;
-  g_warrior_class.skills.push(last_stand);
+  new_class.skills.push(last_stand);
 
   let sword_tornado = new Skill("Sword Tornado");
   sword_tornado.damage_lower = 10;
@@ -139,16 +135,18 @@ function BuildWarriorClass() {
   sword_tornado.aoe = true;
   sword_tornado.duration = 3;
   sword_tornado.is_channeled = true;
-  g_warrior_class.skills.push(sword_tornado);
+  new_class.skills.push(sword_tornado);
+
+	return new_class;
 }
 
 function BuildPaladinClass() {
-  g_paladin_class = new CharacterClass("paladin", 200);
+  let new_class = new CharacterClass("paladin", 200);
 
   let judgement = new Skill("Judgement");
   judgement.damage_lower = 30;
   judgement.damage_upper = 30;
-  g_paladin_class.skills.push(judgement);
+  new_class.skills.push(judgement);
 
   let consecration = new Skill("Consecration");
   consecration.damage_lower = 10;
@@ -156,28 +154,29 @@ function BuildPaladinClass() {
   consecration.duration = 5;
   consecration.aoe = true;
   consecration.is_debuf = true;  // Hack
-  g_paladin_class.skills.push(consecration);
+  new_class.skills.push(consecration);
 
   let flash_of_light = new Skill("Flash of Light");
   flash_of_light.healing = 50;
   flash_of_light.cast_time = 1;
-  flash_of_light.is_channeled = false;
-  g_paladin_class.skills.push(flash_of_light);
+  new_class.skills.push(flash_of_light);
+
+	return new_class;
 }
 
 function BuildWizardClass() {
-  g_wizard_class = new CharacterClass("wizard", 100);
+  let new_class = new CharacterClass("wizard", 100);
 
   let arcane_shield = new Skill("Arcane Shield");
   arcane_shield.healing = 100;
   arcane_shield.cool_down = 3;
   arcane_shield.extends_hp = true;
-  g_wizard_class.skills.push(arcane_shield);
+  new_class.skills.push(arcane_shield);
 
   let fire_blast = new Skill("Fire Blast");
   fire_blast.damage_lower = 50;
   fire_blast.damage_upper = 50;
-  g_wizard_class.skills.push(fire_blast);
+  new_class.skills.push(fire_blast);
 
   let blizzard = new Skill("Blizzard");
   blizzard.damage_lower = 20;
@@ -185,7 +184,30 @@ function BuildWizardClass() {
   blizzard.duration = 5;
   blizzard.aoe = true;
   blizzard.is_channeled = true;
-  g_wizard_class.skills.push(blizzard);
+  new_class.skills.push(blizzard);
+
+	return new_class;
+}
+
+function BuildPriestClass() {
+  let new_class = new CharacterClass("priest", 100);
+
+  let smite = new Skill("Smite");
+  fire_blast.damage_lower = 40;
+  fire_blast.damage_upper = 40;
+  new_class.skills.push(smite);
+
+  let flash_heal = new Skill("Flash Heal");
+  flash_heal.healing = 70;
+  flash_heal.cast_time = 1;
+  new_class.skills.push(flash_heal);
+
+	let renew = new Skill("Renew");
+	renew.healing = 10;
+	renew.duration = 5;
+  new_class.skills.push(renew);
+
+	return new_class;
 }
 
 function NewBasicClass(name, hp, damage_lower, damage_upper) {
@@ -199,14 +221,21 @@ function NewBasicClass(name, hp, damage_lower, damage_upper) {
   return new_class;
 }
 
-function GetPlayerClass(name) {
-  switch (name.toLowerCase()) {
+let g_warrior_class = null;
+let g_paladin_class = null;
+let g_wizard_class = null;
+let g_priest_class = null;
+
+function GetPlayerClass(class_name) {
+  switch (class_name.toLowerCase()) {
     case g_paladin_class.name:
       return g_paladin_class;
     case g_warrior_class.name:
       return g_warrior_class;
     case g_wizard_class.name:
       return g_wizard_class;
+    case g_priest_class.name:
+      return g_priest_class;
   }
   return null;
 }
@@ -227,9 +256,10 @@ function GetMobClass(name) {
 }
 
 function Initialize() {
-  BuildWarriorClass();
-  BuildPaladinClass();
-  BuildWizardClass();
+  g_warrior_class = BuildWarriorClass();
+  g_paladin_class = BuildPaladinClass();
+  g_wizard_class = BuildWizardClass();
+  g_priest_class = BuildPriestClass();
   RebuildUI();
 }
 
