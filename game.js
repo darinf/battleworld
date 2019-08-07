@@ -43,7 +43,7 @@ let g_players = [];
 let g_mobs = [];
 let g_active_character_index = -1;
 
-function AddPlayer() {
+function DoAddPlayer() {
   let dialog = document.getElementById("add_player_dialog");
   let class_select = dialog.getElementsByTagName("select")[0];
   let name_input = dialog.getElementsByTagName("input")[0];
@@ -71,7 +71,7 @@ function AddPlayer() {
   dialog.showModal();
 }
 
-function AddMob() {
+function DoAddMob() {
   let dialog = document.getElementById("add_mob_dialog");
   let type_select = dialog.getElementsByTagName("select")[0];
 
@@ -175,7 +175,7 @@ function RebuildUI() {
               " (" + player.current_action.duration + ")"));
       let input = document.createElement("INPUT");
       input.setAttribute("type", "button");
-      input.setAttribute("onclick", "SkipTurn()");
+      input.setAttribute("onclick", "DoSkipTurn()");
       input.setAttribute("value", "Continue");
       if (character_index != g_active_character_index)
         input.setAttribute("disabled", "true");
@@ -243,7 +243,7 @@ function RebuildUI() {
   }
 }
 
-function Battle() {
+function DoStartBattle() {
   console.log("Battle!");
 
   g_active_character_index = 0;
@@ -253,7 +253,7 @@ function Battle() {
   RebuildUI();
 }
 
-function SkipTurn() {
+function DoSkipTurn() {
   console.log("Skip turn!");
 
   UpdateCurrentAction(GetCharacter(g_active_character_index));
