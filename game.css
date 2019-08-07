@@ -14,3 +14,16 @@
 .active_character {
   border: 1px solid gray;
 }
+
+.target_div {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	border: 1px solid black;
+  margin-right: 0.5em;
+  cursor: hand;
+}
+
+.target_character {
+	background-color: black;
+}

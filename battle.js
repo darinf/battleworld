@@ -39,18 +39,27 @@ class Battle {
     this.UpdateTargetOfMobs_();
 	}
 
-	DoSetTargetCharacterIndex() {
+	SetTargetCharacterIndex(new_index) {
 		let total_players = this.players_.length;
 		let total_mobs = this.mobs_.length;
 		let total_characters = total_players + total_mobs;
 
-		let new_index = input.value;
+    if (!this.IsPlayer_(this.active_character_index_)) {
+      console.log("Cannot set target index of non-player characters!");
+      return;
+    }
+
 		if (new_index < total_characters && new_index >= 0) {
 			let player = this.players_[this.active_character_index_];
-			player.target_character_index = input.value;
+			player.target_character_index = new_index;
 		} else {
-			player.target_character_index = -1;
+		  console.log("Invalid character index!");
 		}
+	}
+
+	GetTargetCharacterIndex() {
+		let character = this.GetCharacter_(this.active_character_index_);
+    return character ? character.target_character_index : -1;
 	}
 
 	DoSkill(skill_name) {
@@ -168,6 +177,8 @@ class Battle {
 			}
 		}
 	}
+
+	// private:
 
   NextTurn_() {
 		// Check if game over.

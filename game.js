@@ -3,11 +3,11 @@
 let g_player_classes = [];
 
 function GetPlayerClass(class_name) {
-	let lower_class_name = class_name.toLowerCase();
-	for (let i = 0; i < g_player_classes.length; ++i) {
-		if (lower_class_name == g_player_classes[i].name)
-			return g_player_classes[i];
-	}
+  let lower_class_name = class_name.toLowerCase();
+  for (let i = 0; i < g_player_classes.length; ++i) {
+    if (lower_class_name == g_player_classes[i].name)
+      return g_player_classes[i];
+  }
   return null;
 }
 
@@ -27,16 +27,16 @@ function GetMobClass(name) {
 }
 
 function DoInitialize() {
-	const kClassBuilders = [
-		BuildPaladinClass,
-		BuildPriestClass,
-		BuildWarriorClass,
-		BuildWizardClass,
-	];
-	for (let f of kClassBuilders)
-		g_player_classes.push(f());
+  const kClassBuilders = [
+    BuildPaladinClass,
+    BuildPriestClass,
+    BuildWarriorClass,
+    BuildWizardClass,
+  ];
+  for (let f of kClassBuilders)
+    g_player_classes.push(f());
 
-	g_battle = new Battle();
+  g_battle = new Battle();
 
   RebuildUI();
 }
@@ -48,11 +48,13 @@ function DoAddPlayer() {
   let class_select = dialog.getElementsByTagName("select")[0];
   let name_input = dialog.getElementsByTagName("input")[0];
 
-	for (let player_class of g_player_classes) {
-		let option = document.createElement("OPTION");
+  // Build out the set of options dynamically.
+  class_select.innerHTML = "";
+  for (let player_class of g_player_classes) {
+    let option = document.createElement("OPTION");
     option.appendChild(document.createTextNode(player_class.name));
     class_select.appendChild(option);
-	}
+  }
 
   dialog.onclose = function() {
     console.log("selected: " + class_select.value + ", " + name_input.value);
@@ -99,25 +101,9 @@ function DoAddMob() {
   dialog.showModal();
 }
 
-function ShowYouWinDialog() {
-  let dialog = document.getElementById("game_over_win");
-
-  dialog.onclose = function() {
-    location.reload();
-    //XXX RebuildUI();
-  }
-
-  dialog.showModal();
-}
-
-function ShowYouLoseDialog() {
-  let dialog = document.getElementById("game_over_lose");
-
-  dialog.onclose = function() {
-    location.reload();
-    //XXX RebuildUI();
-  }
-
+function ShowGameOverDialog(dialog_id) {
+  let dialog = document.getElementById(dialog_id);
+  dialog.onclose = function() { location.reload(); }
   dialog.showModal();
 }
 
@@ -126,6 +112,9 @@ function RebuildUI() {
   let mobs_div = document.getElementById("mobs");
 
   let character_index = 0;
+
+  // Get the target character index of the active character.
+  let target_character_index = g_battle.GetTargetCharacterIndex();
 
   // players:
 
@@ -139,16 +128,26 @@ function RebuildUI() {
     else
       div.setAttribute("class", "character_box");
 
-    div.innerHTML = 
-        "[" + character_index + "] " + player.name + " (" + player.hp + "hp) " +
-        " target: ";
+		let target_div = document.createElement("DIV");
+    target_div.setAttribute("onclick", "DoSetTargetCharacterIndex(" + character_index + ")");
+		if (character_index == target_character_index)
+			target_div.setAttribute("class", "target_div target_character");
+		else
+			target_div.setAttribute("class", "target_div");
+		div.appendChild(target_div);
 
+    div.appendChild(document.createTextNode( 
+        "[" + character_index + "] " + player.name + " (" + player.hp + "hp) " +
+        " target: " + player.target_character_index));
+
+/*
     let input = document.createElement("INPUT");
     input.setAttribute("value", player.target_character_index);
-    input.setAttribute("onchange", "DoSetTargetCharacterIndex()");
-    if (character_index != g_battle.active_character_index)
-      input.setAttribute("disabled", "true");
+    //XXX input.setAttribute("onchange", "DoSetTargetCharacterIndex()");
+    //XXX if (character_index != g_battle.active_character_index)
+    input.setAttribute("disabled", "true");
     div.appendChild(input);
+*/
         
     for (let skill of player.character_class.skills) {
       let input = document.createElement("INPUT");
@@ -199,9 +198,17 @@ function RebuildUI() {
     else
       div.setAttribute("class", "character_box");
 
-    div.innerHTML =
+		let target_div = document.createElement("DIV");
+    target_div.setAttribute("onclick", "DoSetTargetCharacterIndex(" + character_index + ")");
+		if (character_index == target_character_index)
+			target_div.setAttribute("class", "target_div target_character");
+		else
+			target_div.setAttribute("class", "target_div");
+		div.appendChild(target_div);
+
+    div.appendChild(document.createTextNode(
         "[" + character_index + "] " + mob.name + " (" + mob.hp + "hp) " +
-        " target: " + mob.target_character_index;
+        " target: " + mob.target_character_index));
 
     let input = document.createElement("INPUT");
     input.setAttribute("type", "button");
@@ -252,11 +259,7 @@ function DoStartBattle() {
 }
 
 function DidEndBattle(players_won) {
-	if (players_won) {
-		ShowYouWinDialog();
-	} else {
-		ShowYouLoseDialog();
-	}
+  ShowGameOverDialog(players_won ? "game_over_win" : "game_over_lose");
 }
 
 function DoSkipTurn() {
@@ -282,9 +285,9 @@ function DoSkill() {
   RebuildUI();
 }
 
-function DoSetTargetCharacterIndex() {
-  let input = event.target;
-  console.log("DoSetTargetCharacterIndex: " + input.value);
+function DoSetTargetCharacterIndex(index) {
+  console.log("DoSetTargetCharacterIndex: " + index);
+	g_battle.SetTargetCharacterIndex(index);
   RebuildUI();
 }
 
