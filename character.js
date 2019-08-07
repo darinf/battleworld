@@ -59,4 +59,12 @@ class Character {
     this.cool_downs = [];
     this.current_action = null;
   }
+
+	GetCoolDown(skill) {
+		for (let cool_down of this.cool_downs) {
+			if (cool_down.skill.name == skill.name)
+				return cool_down;
+		}
+		return null;
+	}
 }
