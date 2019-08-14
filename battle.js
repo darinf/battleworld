@@ -259,35 +259,18 @@ class Battle {
 	}
 
 	UpdateTargetOfMobs_() {
-		let total_players = this.players_.length;
-		let total_mobs = this.mobs_.length;
-		let total_characters = total_players + total_mobs;
-
-		// For now, we just always have mobs target the warrior, but we should do
-		// something more interesting based on threat calculations.
-
-		let index;
-
-		for (index = 0; index < total_players; ++index) {
-			let player = this.players_[index];
-			if (player.hp != 0 && player.character_class.name == "warrior")
-				break;
-		}
-		if (index == total_players) {  // Fallback to first player.
-			for (index = 0; index < total_players; ++index) {
-				let player = this.players_[index];
-				if (player.hp != 0)
-					break;
-			}
-		}
-
-		for (let mob of this.mobs_) {
-			if (mob.hp == 0) {
-				mob.target_character_index = -1;
-			} else {
-				mob.target_character_index = index;
-			}
-		}
+    for (let mob of this.mobs_) {
+      mob.target_character_index = -1;
+      if (mob.hp == 0)
+        continue;
+      let player = mob.MostThreateningPlayer();
+      for (let i = 0; i < this.players_.length; ++i) {
+        if (this.players_[i] == player) {
+          mob.target_character_index = i;
+          break;
+        }
+      }
+    }
 	}
 
 	UpdateCoolDowns_(character) {
@@ -331,10 +314,24 @@ class Battle {
 			console.log(source_character.name + "'s " + skill.name + " hits " + target_character.name + " for " + damage + "hp.");
 			target_character.hp -= damage;
 
+			if (target_character instanceof Mob) {
+        target_character.AddThreat(damage, source_character);
+        // All mobs are threated by this.
+        for (let mob of this.mobs_) {
+          if (mob != target_character)
+            mob.AddThreat(damage * 0.1, source_character);
+        }
+      }
+
 			if (target_character.hp < 0) {
 				console.log(target_character.name + " is dead.");
 				target_character.hp = 0;  // Dead
-			} 
+        if (target_character instanceof Player) {
+          // All mobs need to drop this player from their threat tables.
+          for (let mob of this.mobs_)
+            mob.DropThreat(target_character);
+        }
+      }
 		}
 
 		// Apply healing effects
@@ -348,6 +345,21 @@ class Battle {
 			}
 			console.log(source_character.name + "'s " + skill.name + " heals " + target_character.name + " for " + healing + "hp.");
 			target_character.hp += healing;
+
+      if (source_character instanceof Player) {
+        // Healing threatens all mobs. Threat is divided equally across all mobs.
+        let threat = healing * 0.5;
+        let num_mobs_remaining = 0;
+        for (let mob of this.mobs_) {
+          if (mob.hp > 0)
+            num_mobs_remaining++;
+        }
+        let threat_per_mob = threat / num_mobs_remaining;
+        for (let mob of this.mobs_) {
+          if (mob.hp > 0)
+            mob.AddThreat(threat_per_mob, source_character);
+        }
+      }
 		}
 	}
 

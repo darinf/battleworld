@@ -102,7 +102,7 @@ class ThreatTable {
   }
 
   Top() {
-    return this.list_.length > 0 ? this.list_[0] : null;
+    return this.list_.length > 0 ? this.list_[0].player : null;
   }
 
   Find_(player) {
@@ -132,10 +132,14 @@ class Mob extends Character {
   }
 
   AddThreat(threat, player) {
-    this.threat_table_.Add(threat, player);
+    this.threat_table_.Add(threat * player.character_class.threat_modifier, player);
   }
 
   DropThreat(player) {
     this.threat_table_.Drop(player);
+  }
+
+  MostThreateningPlayer() {
+    return this.threat_table_.Top();
   }
 }
