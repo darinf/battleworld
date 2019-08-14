@@ -218,6 +218,13 @@ function RebuildUI() {
       }
     }
 
+    // Debug threat table:
+    if (mob.threat_table_.list_.length > 0) {
+      div.appendChild(document.createTextNode("threat: "));
+      for (let entry of mob.threat_table_.list_)
+        div.appendChild(document.createTextNode(entry.player.name + "=" + entry.threat.toFixed(0) + " "));
+    }
+
     mobs_div.appendChild(div);
 
     character_index++;
