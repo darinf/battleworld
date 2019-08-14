@@ -20,7 +20,8 @@ class Skill {
 }
 
 class Debuf {
-  constructor(skill, duration) {
+  constructor(source_character, skill, duration) {
+    this.source_character = source_character;
     this.skill = skill;
     this.duration = duration;
   }
@@ -67,4 +68,73 @@ class Character {
 		}
 		return null;
 	}
+}
+
+class Player extends Character {
+  constructor(name, character_class) {
+    super(name, character_class);
+  }
+}
+
+class ThreatTable {
+  constructor() {
+    this.list_ = new Array();  // Array of { threat: N, player: P }
+  }
+
+  Add(threat, player) {
+    let entry = this.Find_(player);
+    if (entry) {
+      entry.threat += threat;
+    } else {
+      entry = this.Push_(threat, player);
+    }
+    this.Resort_();
+  }
+
+  Drop(player) {
+    for (let i = 0; i < this.list_.length; ++i) {
+      if (this.list_[i].player == player) {
+        this.list_.splice(i, 1);
+        break;
+      }
+    }
+  }
+
+  Top() {
+    return this.list_.length > 0 ? this.list_[0] : null;
+  }
+
+  Find_(player) {
+    for (let entry of this.list_) {
+      if (entry.player == player)
+        return entry;
+    }
+    return null;
+  }
+
+  Push_(threat, player) {
+    this.list_.push({threat: threat, player: player});
+  }
+
+  Resort_() {
+    this.list_.sort(function(a, b) {
+      // Sort in descending order, so top threat is element 0 in the list.
+      return b.threat - a.threat;
+    });
+  }
+}
+
+class Mob extends Character {
+  constructor(name, character_class) {
+    super(name, character_class);
+    this.threat_table_ = new ThreatTable();
+  }
+
+  AddThreat(threat, player) {
+    this.threat_table_.Add(threat, player);
+  }
+
+  DropThreat(player) {
+    this.threat_table_.Drop(player);
+  }
 }

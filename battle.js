@@ -116,11 +116,11 @@ class Battle {
 			console.log("No target characters for skill!");
 		} else {
 			if (selected_skill.cast_time == 0) {
-				for (let character of target_characters) {
+				for (let target_character of target_characters) {
 					if (selected_skill.is_debuf) {
-						this.ApplyDebufToCharacter_(character, selected_skill);
+						this.ApplyDebufToCharacter_(active_player, target_character, selected_skill);
 					} else {
-						this.ApplySkillToCharacter_(character, selected_skill);
+						this.ApplySkillToCharacter_(active_player, target_character, selected_skill);
 					}
 				}
 			}
@@ -156,7 +156,7 @@ class Battle {
 
 		let remaining_debufs = [];
 		for (let debuf of mob.debufs) {
-			this.ApplySkillToCharacter_(mob, debuf.skill);
+			this.ApplySkillToCharacter_(debuf.source_character, mob, debuf.skill);
 			if (--debuf.duration > 0)
 				remaining_debufs.push(debuf);
 		}
@@ -172,7 +172,7 @@ class Battle {
 				console.log("Target is a dead player.");
 			} else {
 				// Just use the first skill for now.
-				this.ApplySkillToCharacter_(target_player, mob.character_class.skills[0]);
+				this.ApplySkillToCharacter_(mob, target_player, mob.character_class.skills[0]);
 				this.NextTurn_();
 			}
 		}
@@ -270,7 +270,7 @@ class Battle {
 
 		for (index = 0; index < total_players; ++index) {
 			let player = this.players_[index];
-			if (player.hp != 0 && player.character_class.name == "Warrior")
+			if (player.hp != 0 && player.character_class.name == "warrior")
 				break;
 		}
 		if (index == total_players) {  // Fallback to first player.
@@ -309,7 +309,7 @@ class Battle {
 		let skill = character.current_action.skill;
 		if (skill.cast_time == 0 || character.current_action.duration == 0) {
 			for (let target_character of character.current_action.target_characters) {
-				this.ApplySkillToCharacter_(target_character, skill);
+				this.ApplySkillToCharacter_(character, target_character, skill);
 			}
 		}
 
@@ -317,7 +317,7 @@ class Battle {
 			character.current_action = null;
 	}
 
-	ApplySkillToCharacter_(character, skill) {
+	ApplySkillToCharacter_(source_character, target_character, skill) {
 		// Apply damaging effects
 		if (skill.IsDamagingSkill()) {
 			let damage;
@@ -328,41 +328,41 @@ class Battle {
 				damage = Math.trunc(skill.damage_lower + (skill.damage_upper - skill.damage_lower) * Math.random());
 			}
 
-			console.log(skill.name + " hits " + character.name + " for " + damage + "hp.");
-			character.hp -= damage;
+			console.log(source_character.name + "'s " + skill.name + " hits " + target_character.name + " for " + damage + "hp.");
+			target_character.hp -= damage;
 
-			if (character.hp < 0) {
-				console.log(character.name + " is dead.");
-				character.hp = 0;  // Dead
+			if (target_character.hp < 0) {
+				console.log(target_character.name + " is dead.");
+				target_character.hp = 0;  // Dead
 			} 
 		}
 
 		// Apply healing effects
 		if (skill.healing > 0) {
 			let healing;
-			let max_hp = character.character_class.hp;
-			if (!skill.extends_hp && character.hp + skill.healing > max_hp) {
-				healing = max_hp - character.hp;
+			let max_hp = target_character.character_class.hp;
+			if (!skill.extends_hp && target_character.hp + skill.healing > max_hp) {
+				healing = max_hp - target_character.hp;
 			} else {
 				healing = skill.healing;
 			}
-			console.log(skill.name + " heals " + character.name + " for " + healing + "hp.");
-			character.hp += healing;
+			console.log(source_character.name + "'s " + skill.name + " heals " + target_character.name + " for " + healing + "hp.");
+			target_character.hp += healing;
 		}
 	}
 
-	ApplyDebufToCharacter_(character, skill) {
+	ApplyDebufToCharacter_(source_character, target_character, skill) {
 		if (!skill.is_debuf)
 			throw "Oops: skill is not a debuf!";
 
 		// Overwrite existing version of the same skill.
-		for (let debuf of character.debufs) {
+		for (let debuf of target_character.debufs) {
 			if (debuf.skill.name == skill.name) {
 				debuf.duration = skill.duration;
 				return;
 			}
 		}
-		character.debufs.push(new Debuf(skill, skill.duration));
+		target_character.debufs.push(new Debuf(source_character, skill, skill.duration));
 	}
 
 	GetCharacter_(index) {

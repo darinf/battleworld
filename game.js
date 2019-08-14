@@ -16,6 +16,9 @@ let g_basic_mob_types = [
   {name: "Imp", hp: 50, damage: [5, 30]},
   {name: "Demon", hp: 200, damage: [15, 90]},
   {name: "Scourge Soldier", hp: 150, damage: [10, 60]},
+  {name: "Abomination", hp: 500, damage: [25, 115]},
+  {name: "Naga Behemoth", hp: 750, damage: [20, 100]},
+  {name: "Fel Lord", hp: 1000, damage: [30, 180]},
 ];
 
 function GetMobClass(name) {
@@ -65,7 +68,7 @@ function DoAddPlayer() {
     let player_name = name_input.value;
     let class_name = class_select.value;
 
-    g_battle.AddPlayer(new Character(player_name, GetPlayerClass(class_name)));
+    g_battle.AddPlayer(new Player(player_name, GetPlayerClass(class_name)));
 
     RebuildUI();
   };
@@ -93,7 +96,7 @@ function DoAddMob() {
 
     let type_name = type_select.value;
 
-    g_battle.AddMob(new Character(type_name, GetMobClass(type_name)));
+    g_battle.AddMob(new Mob(type_name, GetMobClass(type_name)));
 
     RebuildUI();
   };
