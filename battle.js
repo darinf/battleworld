@@ -328,7 +328,7 @@ class Battle {
         }
       }
 
-			if (target_character.hp < 0) {
+			if (target_character.hp <= 0) {
 				Log(target_character.name + " is dead.");
 				target_character.hp = 0;  // Dead
         if (target_character instanceof Player) {
