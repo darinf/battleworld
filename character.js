@@ -46,6 +46,7 @@ class CharacterClass {
   constructor(name, hp) {
     this.name = name;
     this.hp = hp;
+    this.threat_modifier = 1.0;  // Default
     this.skills = [];
   }
 }

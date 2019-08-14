@@ -51,6 +51,7 @@
 
 function BuildWarriorClass() {
   let new_class = new CharacterClass("warrior", 250);
+  new_class.threat_modifier = 1.3;
 
   let slam = new Skill("Slam");
   slam.damage_lower = 30;
