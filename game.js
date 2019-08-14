@@ -1,5 +1,12 @@
 // game.js
 
+function Log(s) {
+  console.log(s);
+  let log = document.getElementById("log");
+  log.appendChild(document.createTextNode(s + "\n"));
+  log.scrollTop = 99999999;  // hack
+} 
+
 let g_player_classes = [];
 
 function GetPlayerClass(class_name) {
@@ -250,7 +257,7 @@ function RebuildUI() {
 }
 
 function DoStartBattle() {
-  console.log("Battle!");
+  Log("Battle!");
 
 	g_battle.Start(DidEndBattle);
 

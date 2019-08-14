@@ -301,6 +301,11 @@ class Battle {
 	}
 
 	ApplySkillToCharacter_(source_character, target_character, skill) {
+    if (target_character.hp == 0) {
+      console.log("Target character is already dead.");
+      return;
+    }
+
 		// Apply damaging effects
 		if (skill.IsDamagingSkill()) {
 			let damage;
@@ -311,7 +316,7 @@ class Battle {
 				damage = Math.trunc(skill.damage_lower + (skill.damage_upper - skill.damage_lower) * Math.random());
 			}
 
-			console.log(source_character.name + "'s " + skill.name + " hits " + target_character.name + " for " + damage + "hp.");
+			Log(source_character.name + "'s " + skill.name + " hits " + target_character.name + " for " + damage + "hp.");
 			target_character.hp -= damage;
 
 			if (target_character instanceof Mob) {
@@ -324,7 +329,7 @@ class Battle {
       }
 
 			if (target_character.hp < 0) {
-				console.log(target_character.name + " is dead.");
+				Log(target_character.name + " is dead.");
 				target_character.hp = 0;  // Dead
         if (target_character instanceof Player) {
           // All mobs need to drop this player from their threat tables.
@@ -343,7 +348,7 @@ class Battle {
 			} else {
 				healing = skill.healing;
 			}
-			console.log(source_character.name + "'s " + skill.name + " heals " + target_character.name + " for " + healing + "hp.");
+			Log(source_character.name + "'s " + skill.name + " heals " + target_character.name + " for " + healing + "hp.");
 			target_character.hp += healing;
 
       if (source_character instanceof Player) {

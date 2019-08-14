@@ -5,10 +5,6 @@
 .character_box {
   margin: 0.5em;
   padding: 0.5em;
-  /*
-  border: 1px solid gray;
-  width: 400px;
-  */
 }
 
 .active_character {
@@ -26,4 +22,9 @@
 
 .target_character {
 	background-color: black;
+}
+
+#log {
+  height: 200px;
+  overflow: scroll;
 }
